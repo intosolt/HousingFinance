@@ -3,12 +3,10 @@ package com.finance.service;
 import com.finance.domain.FinanceDto;
 import com.finance.domain.InstituteFinance;
 
-/*import kakaopay.housingfinance.pojo.FinanceStatusByYear;
-import kakaopay.housingfinance.predict.PredictFinance;
-*/
 import com.finance.domain.InstituteFinanceRepository;
 import com.institute.domain.Institute;
 import com.institute.domain.InstituteRepository;
+import com.institute.service.InstituteService;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,6 +16,9 @@ import java.io.FileReader;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
+
+import javax.persistence.EntityNotFoundException;
+
 import java.util.regex.Pattern;
 
 
@@ -29,15 +30,19 @@ public class FinanceService {
 	 private final InstituteRepository iRepository;
 	 
 	 private Pattern pattern = Pattern.compile("\"([\\d,]+?)\"");
+	 
+	 private List<InstituteFinance> fList;
+	 private List<Institute> iList;
+	 private InstituteService instituteService;
+	 private FinanceService  financeService;
 
 	    public FinanceService(InstituteFinanceRepository iFinanceRepository, InstituteRepository iRepository) {
 	        this.iFinanceRepository = iFinanceRepository;
 	        this.iRepository = iRepository;
 	    }
 
-	    @RequestMapping(value = "/")
+	    @RequestMapping(value = "/Finance/SaveFileData")
 		public String SaveFileData(String filePath) throws Exception {
-
 			try {
 
 				String line;
@@ -96,42 +101,44 @@ public class FinanceService {
 					
 					}
 
-					//fList = iFinanceRepository.findAll();
+					fList = iFinanceRepository.findAll();
 				}
 
 				br.close();
 				
-				/*
-				 * //기관별 년도별 합계 조회 Map<String, Integer> bankFinanceMap =
-				 * mappingAmountOfYearByBankIdAndYear(fList); // key == bankId/year
-				 * 
-				 * // 기관별 지원현황조회 Map<String, String> bankNameMap =
-				 * iList.stream().collect(Collectors.toMap(Institute::getCode,
-				 * Institute::getName));
-				 * 
-				 * 
-				 * List<FinanceDto> financeStatusByYears =
-				 * listingFinanceStatus(bankFinanceMap,bankNameMap);
-				 */
-				/*
-				 * if(bankNameMap != null) {
-				 * System.out.println("===== bankNameMap 조회=============================");
-				 * 
-				 * bankNameMap.forEach((key, value) -> System.out.println("Key: "+key+
-				 * " :: Value: "+value));
-				 * 
-				 * }
-				 */
 				
-				/*
-				 * Map<String, Object> resultMap = new HashMap<>(); resultMap.put("name",
-				 * "주택금융 공급현황"); resultMap.put("status", financeStatusByYears);
-				 * 
-				 * Map<String, String> bankList = instituteService.getAllInstitutes();
-				 * 
-				 * if(bankList != null) { bankList.forEach((key, value) ->
-				 * System.out.println("Key: "+key+ " :: Value: "+value)); }
-				 */
+			/*
+			 * //기관별 년도별 합계 조회 Map<String, Integer> bankFinanceMap =
+			 * mappingAmountOfYearByBankIdAndYear(fList); // key == bankId/year
+			 * 
+			 * // 기관별 지원현황조회 Map<String, String> bankNameMap =
+			 * iList.stream().collect(Collectors.toMap(Institute::getCode,
+			 * Institute::getName));
+			 * 
+			 * 
+			 * List<FinanceDto> financeStatusByYears =
+			 * listingFinanceStatus(bankFinanceMap,bankNameMap);
+			 * 
+			 * 
+			 * if(bankNameMap != null) {
+			 * System.out.println("===== bankNameMap 조회=============================");
+			 * 
+			 * bankNameMap.forEach((key, value) -> System.out.println("Key: "+key+
+			 * " :: Value: "+value));
+			 * 
+			 * }
+			 * 
+			 * 
+			 * 
+			 * Map<String, Object> resultMap = new HashMap<>(); resultMap.put("name",
+			 * "주택금융 공급현황"); resultMap.put("status", financeStatusByYears);
+			 * 
+			 * Map<String, String> bankList = instituteService.getAllInstitutes();
+			 * 
+			 * if(bankList != null) { bankList.forEach((key, value) ->
+			 * System.out.println("Key: "+key+ " :: Value: "+value)); }
+			 */
+				 
 
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -189,4 +196,26 @@ public class FinanceService {
 
 	        return financeStatusByYears;
 	    }
+	    
+	    public Map<String, Object> getHighestYearBank() {
+	        List<InstituteFinance> finances = iFinanceRepository.findAll();
+	        Map<String, Integer> financeMap = mappingAmountOfYearByBankIdAndYear(finances); // key == bankId/year
+
+	        String key = Collections.max(financeMap.entrySet(),
+	                Comparator.comparingInt(Map.Entry::getValue)).getKey();
+
+	        String[] keys = key.split("/");
+	        String code = keys[0].toString();
+	        Institute institute = iRepository.findById(code)
+	                .orElseThrow(EntityNotFoundException::new);
+
+	        String year = keys[1];
+
+	        Map<String, Object> resultMap = new HashMap<>();
+	        resultMap.put("year", year);
+	        resultMap.put("institute", institute.getName());
+	        return resultMap;
+	    }
+
+
 }

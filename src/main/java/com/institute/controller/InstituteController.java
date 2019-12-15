@@ -29,7 +29,7 @@ public class InstituteController {
 	    }
 
 	 // 전체 금융기관목록 조회
-		@GetMapping("Institute/InstituteList")
+		@GetMapping("/Institute/InstituteList")
 		public ResponseEntity getAllInstituteFinance() {
 			try {
 				return new ResponseEntity<>(instituteService.getAllInstitutes(), httpHeaders, HttpStatus.OK);

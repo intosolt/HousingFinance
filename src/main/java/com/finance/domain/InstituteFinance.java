@@ -12,15 +12,16 @@ import javax.persistence.*;
 public class InstituteFinance {
     protected InstituteFinance(){}
 
-    @Id 
-    @Column(name = "id")
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+	
+	  @Id
+	  @Column(name = "id")
+	  @GeneratedValue
+	  private Long id;
+	 
 
     @Column(name = "code")
     private String code;
     
-
     @Column
     private Integer year;
 
@@ -32,6 +33,7 @@ public class InstituteFinance {
     
     @Builder
     public InstituteFinance(Integer year, Integer month, Integer amount, String code) {
+    	//this.id = (long) Math.random();
     	this.year = year;
     	this.month = month;
     	this.amount = amount;
@@ -56,8 +58,7 @@ public class InstituteFinance {
     
   
     @Override public String toString() {
-    	return "InstituteFinance [id = " + id +
-    			  ", year = " + year + ", month = "+ month + ", amount = " + amount +
+    	return "InstituteFinance [year = " + year + ", month = "+ month + ", amount = " + amount +
     			  ", code = "+ code+"]"; 
     }
 
